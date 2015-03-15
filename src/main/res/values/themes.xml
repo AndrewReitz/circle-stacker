@@ -1,0 +1,5 @@
+<resources>
+  <style name="Theme.CircleStacker" parent="Theme.AppCompat.Light">
+    <!-- Place your theme settings here! -->
+  </style>
+</resources>

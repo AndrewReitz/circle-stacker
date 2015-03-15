@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="circle_colors">
+    <item>#0099CC</item>
+    <item>#AA66CC</item>
+    <item>#99CC00</item>
+    <item>#FFBB33</item>
+    <item>#FF4444</item>
+    <item>#FFFFFF</item>
+  </array>
+</resources>
