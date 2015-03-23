@@ -31,16 +31,19 @@ class MainActivity extends Activity {
   /** Container view to place all circles in. */
   @InjectView(R.id.main_container) ViewGroup container
 
+  /** TextView for dispalying start and end game text. */
   @InjectView(R.id.main_start_text) TextView startText
 
+  /** TextView for displaying the user's score. */
   @InjectView(R.id.main_score) TextView scoreText
 
   /** Colors for the circles. */
   private CircleColorManager circleColors
 
-  /** Index into colors */
+  /** Index into colors the circles can be. */
   private int colorIndex = 0
 
+  /** The starting circle that sets up the original radius the user can hit. */
   private CircleView startCircle
 
   /** A circle to just handle clicks. */
@@ -179,7 +182,6 @@ class MainActivity extends Activity {
               throw new Exception("Circle out of bounds")
             }
             currentCircle.radius = radius
-            currentCircle.invalidate()
           }
         })
 
