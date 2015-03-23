@@ -13,6 +13,8 @@ import com.andrewreitz.circlestacker.data.CircleColorManager
 import com.arasthel.swissknife.SwissKnife
 import com.arasthel.swissknife.annotations.InjectView
 import groovy.transform.CompileStatic
+import rx.Observable
+import rx.Observer
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.functions.Func1
@@ -109,81 +111,90 @@ class MainActivity extends Activity {
       debugLog "startClickListener ->"
       startText.visibility = GONE
 
-      getOnCircleTouchListener()()
-      clearTopCircle.onClickListener = onCircleTouchListener as View.OnClickListener
+      onCircleTouched()
+      clearTopCircle.onClickListener = {
+        onCircleTouched()
+      }
       debugLog "<- startClickListener"
     }
   }
 
-  Closure getOnCircleTouchListener() {
-    return {
-      debugLog "onCircleTouchListener ->"
-      if (currentCircle) {
-        maxRadius = currentCircle.radius
-      }
-      newCircleSubscription.unsubscribe()
-      scoreText.text = String.format(getString(R.string.score), ++stacksMade)
+  private void onCircleTouched() {
+    debugLog "onCircleTouched ->"
 
-      currentCircle = new CircleView(x: containerCenter.x,
-          y: containerCenter.y,
-          radius: 0,
-          color: nextColor,
-          context: this)
-
-      container.addView(currentCircle, container.childCount)
-      final float incrementRadiusBy = maxRadius / 50 as float
-
-
-      newCircleSubscription = rx.Observable.interval(16, MILLISECONDS)
-          .filter(new Func1<Long, Boolean>() {
-        @Override Boolean call(Long aLong) {
-          return aLong != 0
-        }
-      }).map(new Func1<Long, Float>() {
-        @Override Float call(Long aLong) {
-          return aLong * incrementRadiusBy as Float
-        }
-      })
-          .observeOn(AndroidSchedulers.mainThread())
-          .subscribe(new rx.Observer<Float>() {
-        @Override void onCompleted() {}
-
-        @Override void onError(Throwable e) {
-          debugLog "Game Over"
-
-          clearTopCircle.onClickListener = onRestartGameListener as View.OnClickListener
-          startText.text = getString(R.string.game_over)
-          startText.visibility = VISIBLE
-          container.removeView(startText)
-          container.addView(startText, container.childCount)
-          maxRadius = overallMaxRadius
-          stacksMade = 0
-        }
-
-        @Override void onNext(Float radius) {
-          debugLog "Radius %s", radius
-
-          if (radius > maxRadius) {
-            // Throw exception to go to onError
-            throw new Exception("Circle out of bounds")
-          }
-          currentCircle.radius = radius
-          currentCircle.invalidate()
-        }
-      })
-
-      debugLog "onCircleTouchListener <-"
+    if (currentCircle) {
+      maxRadius = currentCircle.radius
     }
+    newCircleSubscription.unsubscribe()
+    scoreText.text = String.format(getString(R.string.score), ++stacksMade)
+
+    currentCircle = new CircleView(
+        x: containerCenter.x,
+        y: containerCenter.y,
+        radius: 0,
+        color: nextColor,
+        context: this
+    )
+
+    container.addView(currentCircle, container.childCount)
+    final float incrementRadiusBy = maxRadius / 50 as float // woo magic number!
+
+    // get a verify error if we try to directly access inside Observer
+    def restart = { onRestartGameListener() }
+
+    // 15 = is about 60fps
+    newCircleSubscription = Observable.interval(15, MILLISECONDS)
+        .filter(new Func1<Long, Boolean>() {
+          @Override Boolean call(Long aLong) {
+            return aLong != 0
+          }
+        }).map(new Func1<Long, Float>() {
+          @Override Float call(Long aLong) {
+            return aLong * incrementRadiusBy as Float
+          }
+        })
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Observer<Float>() {
+          @Override void onCompleted() {}
+          @Override void onError(Throwable e) {
+            debugLog "Game Over"
+
+            clearTopCircle.onClickListener = {
+              restart()
+            }
+            startText.text = getString(R.string.game_over)
+            startText.visibility = VISIBLE
+            container.removeView(startText)
+            container.addView(startText, container.childCount)
+            maxRadius = overallMaxRadius
+            currentCircle = null
+            stacksMade = 0
+          }
+
+          @Override void onNext(Float radius) {
+            debugLog "Radius %s", radius
+
+            if (radius > maxRadius) {
+              // Throw exception to go to onError
+              throw new Exception("Circle out of bounds")
+            }
+            currentCircle.radius = radius
+            currentCircle.invalidate()
+          }
+        })
+
+    debugLog "onCircleTouched <-"
   }
 
-  Closure getOnRestartGameListener() {
-    return {
-      debugLog "onRestartGameListener ->"
-      startCircle = new CircleView(startCircleParams)
-      container.addView(startCircle, container.childCount)
-      clearTopCircle.onClickListener = onCircleTouchListener as View.OnClickListener
-      getOnCircleTouchListener()()
-      debugLog "onRestartGameListener <-"
+  private void onRestartGameListener() {
+    debugLog "onRestartGameListener ->"
+    startCircleParams.color = nextColor
+    startCircle = new CircleView(startCircleParams)
+    container.addView(startCircle, container.childCount)
+    clearTopCircle.onClickListener = {
+      onCircleTouched()
     }
+    onCircleTouched()
+    debugLog "onRestartGameListener <-"
   }
 }
