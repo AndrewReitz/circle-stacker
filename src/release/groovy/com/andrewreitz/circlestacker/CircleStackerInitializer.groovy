@@ -1,18 +1,19 @@
 package com.andrewreitz.circlestacker
 
 import android.app.Application
+import com.crashlytics.android.Crashlytics
+import groovy.transform.CompileStatic
+import io.fabric.sdk.android.Fabric
 
+@CompileStatic
 final class CircleStackerInitializer {
-  private final Application application
-
-  CircleStackerInitializer(Application application) {
-    this.application = application
+  /** Init all things release here */
+  static void init(Application app) {
+    Fabric.with(app, new Crashlytics());
   }
 
-  /** Init all things release here */
-  void init() {
-    // init release things here like Crashlytics
-    /* Timber.plant(new CrashReportingTree()) */
+  private CircleStackerInitializer() {
+    throw new AssertionError("No Instances" as Object)
   }
 }
 

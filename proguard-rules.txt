@@ -1,0 +1,22 @@
+-dontobfuscate
+-keep class com.andrewreitz.circlestacker.**
+-keep class org.codehaus.groovy.vmplugin.**
+-keep class org.codehaus.groovy.runtime.**
+-keep class org.codehaus.groovy.reflection.**
+
+-keepclassmembers class com.andrewreitz.circlestacker.** {
+  *;
+}
+
+-keepclassmembers class org.codehaus.groovy.runtime.** {
+  *;
+}
+-keepclassmembers class ** implements org.codehaus.groovy.runtime.GeneratedClosure {
+  *;
+}
+-keepclassmembers class org.codehaus.groovy.reflection.** {
+  *;
+}
+-dontwarn org.codehaus.groovy.**
+-dontwarn groovy**
+-dontwarn rx.internal.util.unsafe.**
