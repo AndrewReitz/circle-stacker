@@ -1,0 +1,14 @@
+// CodeNarc
+apply plugin: "codenarc"
+
+dependencies {
+  codenarc "org.codenarc:CodeNarc:0.23"
+}
+
+codenarc {
+  configFile rootProject.file('codequality/codenarc.groovy')
+}
+
+//codenarcTest {
+//  configFile rootProject.file('codequality/codenarcTest.groovy')
+//}
