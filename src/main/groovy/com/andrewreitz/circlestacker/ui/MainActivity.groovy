@@ -1,6 +1,7 @@
 package com.andrewreitz.circlestacker.ui
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.Point
 import android.os.Bundle
@@ -26,7 +27,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static timber.log.Timber.d as debugLog
 
 @CompileStatic
-class MainActivity extends Activity {
+final class MainActivity extends Activity {
 
   /** Container view to place all circles in. */
   @InjectView(R.id.main_container) ViewGroup container
@@ -162,10 +163,17 @@ class MainActivity extends Activity {
           @Override void onError(Throwable e) {
             debugLog "Game Over"
 
+            def gameOverAlertBuilder = new AlertDialog.Builder(MainActivity.this)
+            gameOverAlertBuilder.title = getString(R.string.game_over)
+            gameOverAlertBuilder.message = "You got $stacksMade stacks!"
+            gameOverAlertBuilder.setPositiveButton(android.R.string.ok, { /* Do nothing */ })
+            gameOverAlertBuilder.create()
+                .show()
+
             clearTopCircle.onClickListener = {
               restart()
             }
-            startText.text = getString(R.string.game_over)
+
             startText.visibility = VISIBLE
             container.removeView(startText)
             container.addView(startText, container.childCount)
